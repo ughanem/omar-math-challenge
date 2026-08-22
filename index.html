@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#667eea">
+<title>Omar's Math Challenge</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.svg">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1a1a2e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #eaeaea; padding: 16px; min-height: 100vh; }
+  .container { max-width: 500px; margin: 0 auto; }
+  .header { text-align: center; margin-bottom: 16px; }
+  .header h1 { font-size: 18px; color: #fff; }
+  .header .sub { color: #a0aec0; font-size: 12px; }
+  .progress-bar { background: #2d3748; border-radius: 100px; height: 6px; margin-bottom: 4px; overflow: hidden; }
+  .progress-fill { background: linear-gradient(90deg, #667eea, #48bb78); height: 100%; border-radius: 100px; transition: width 0.4s; }
+  .progress-text { text-align: center; font-size: 11px; color: #a0aec0; margin-bottom: 10px; }
+  .streak-bar { text-align: center; font-size: 13px; color: #fbd38d; margin-bottom: 10px; }
+  .quiz-card { background: #2d3748; border: 1px solid #4a5568; border-radius: 16px; padding: 24px 20px; text-align: center; min-height: 340px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+  .quiz-card.flash-correct { animation: flashG 0.4s; }
+  .quiz-card.flash-wrong { animation: flashR 0.4s; }
+  @keyframes flashG { 0%,100%{background:#2d3748} 50%{background:#22543d} }
+  @keyframes flashR { 0%,100%{background:#2d3748} 50%{background:#742a2a} }
+  .timer-container { position: relative; width: 70px; height: 70px; margin: 0 auto 12px; }
+  .timer-ring { transform: rotate(-90deg); }
+  .timer-bg { fill: none; stroke: #4a5568; stroke-width: 5; }
+  .timer-fg { fill: none; stroke: #48bb78; stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.1s linear, stroke 0.3s; }
+  .timer-fg.warn { stroke: #ed8936; }
+  .timer-fg.danger { stroke: #fc8181; }
+  .timer-num { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 18px; font-weight: 700; font-family: monospace; color: #fff; }
+  .q-badge { padding: 3px 10px; border-radius: 20px; background: #4a5568; font-size: 10px; color: #a0aec0; text-transform: uppercase; margin-bottom: 6px; display: inline-block; }
+  .op-badge { padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; display: inline-block; }
+  .op-mult { background: #2b3a67; color: #90cdf4; }
+  .op-div { background: #5b2c3c; color: #feb2b2; }
+  .diff-badge { padding: 2px 8px; border-radius: 12px; font-size: 9px; font-weight: 600; text-transform: uppercase; margin-bottom: 10px; display: inline-block; }
+  .d-easy { background: #22543d; color: #68d391; }
+  .d-med { background: #744210; color: #fbd38d; }
+  .d-hard { background: #742a2a; color: #fc8181; }
+  .question { font-size: 34px; font-weight: 700; font-family: monospace; margin-bottom: 16px; color: #fff; }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; max-width: 280px; }
+  .ch-btn { padding: 14px; border-radius: 10px; border: 2px solid #4a5568; background: #1a202c; color: #fff; font-size: 20px; font-weight: 600; font-family: monospace; cursor: pointer; transition: all 0.15s; }
+  .ch-btn:active { transform: scale(0.95); }
+  .ch-btn.cor { border-color: #48bb78; background: #22543d; }
+  .ch-btn.wrg { border-color: #fc8181; background: #742a2a; }
+  .ch-btn.rev { border-color: #48bb78; background: #22543d; }
+  .ans-input { font-size: 26px; font-family: monospace; text-align: center; width: 130px; padding: 12px; border: 2px solid #4a5568; border-radius: 10px; outline: none; background: #1a202c; color: #fff; }
+  .ans-input:focus { border-color: #667eea; }
+  .ans-input.cor { border-color: #48bb78; background: #22543d; }
+  .ans-input.wrg { border-color: #fc8181; background: #742a2a; }
+  .sub-btn { margin-top: 10px; padding: 10px 24px; border-radius: 8px; border: none; background: #667eea; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .feedback { margin-top: 10px; font-size: 14px; font-weight: 600; min-height: 20px; }
+  .feedback.cor { color: #68d391; }
+  .feedback.wrg { color: #fc8181; }
+  .btn { padding: 12px 24px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+  .btn-pri { background: #667eea; color: #fff; }
+  .btn-suc { background: #48bb78; color: #fff; }
+  .btn-red { background: #e53e3e; color: #fff; }
+  .settings label { display: block; margin-bottom: 3px; font-size: 12px; color: #a0aec0; }
+  .settings select { width: 100%; padding: 10px; border: 1px solid #4a5568; border-radius: 8px; font-size: 14px; background: #1a202c; color: #fff; margin-bottom: 12px; }
+  .settings .row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .settings .row input { flex: 1; }
+  .range-val { font-size: 13px; color: #fbd38d; font-weight: 600; min-width: 28px; text-align: center; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 12px 0; }
+  .stat-box { background: #1a202c; border-radius: 8px; padding: 10px 6px; text-align: center; }
+  .stat-box .v { font-size: 18px; font-weight: 700; color: #fff; }
+  .stat-box .l { font-size: 10px; color: #a0aec0; margin-top: 2px; }
+  .weak-tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .weak-tag { background: #742a2a; color: #fc8181; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+  .review-item { display: flex; align-items: center; padding: 6px 10px; border-radius: 6px; margin-bottom: 4px; background: #1a202c; border: 1px solid #4a5568; font-size: 12px; font-family: monospace; }
+  .review-item .ca { color: #68d391; font-weight: 600; margin-left: auto; }
+  .review-item .ua { color: #fc8181; text-decoration: line-through; margin-left: 6px; }
+  .xp-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+  .xp-track { flex: 1; height: 5px; background: #2d3748; border-radius: 100px; overflow: hidden; }
+  .xp-fill { height: 100%; background: linear-gradient(90deg, #f6ad55, #ed8936); border-radius: 100px; transition: width 0.5s; }
+  .xp-pts { font-size: 11px; color: #fbd38d; font-weight: 600; }
+  .btn-group { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 12px; }
+  .hidden { display: none !important; }
+  .pop { position: absolute; top: 35%; left: 50%; transform: translate(-50%,-50%); font-size: 22px; font-weight: 700; color: #fbd38d; pointer-events: none; animation: fUp 0.8s ease forwards; opacity: 0; }
+  @keyframes fUp { 0%{opacity:1;transform:translate(-50%,-50%)} 100%{opacity:0;transform:translate(-50%,-120px)} }
+  .op-tabs { display: flex; gap: 6px; margin-bottom: 14px; width: 100%; max-width: 300px; }
+  .op-tab { flex: 1; padding: 10px; border-radius: 8px; border: 2px solid #4a5568; background: #1a202c; color: #a0aec0; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.15s; }
+  .op-tab:active { transform: scale(0.97); }
+  .op-tab.active-mult { border-color: #667eea; color: #90cdf4; background: #2b3a67; }
+  .op-tab.active-div { border-color: #e53e3e; color: #feb2b2; background: #5b2c3c; }
+  .op-tab.active-mix { border-color: #ed8936; color: #fbd38d; background: #744210; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1 id="mainTitle">&#9889; Omar's Math Challenge</h1>
+    <div class="sub">Multiplication &amp; Division Training</div>
+  </div>
+  <div id="xpBar" class="xp-bar hidden"><span style="font-size:11px;color:#a0aec0">XP</span><div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div><span class="xp-pts" id="xpPts">0</span></div>
+  <div id="progSec" class="hidden"><div class="progress-bar"><div class="progress-fill" id="progFill" style="width:0%"></div></div><div class="progress-text" id="progTxt"></div></div>
+  <div id="streakBar" class="streak-bar hidden">&#128293; <span id="streakTxt">Streak: 0</span></div>
+  <div class="quiz-card" id="card">
+    <div id="startScreen">
+      <div style="font-size:36px;margin-bottom:12px">&#127919;</div>
+      <h2 style="color:#fff;font-size:17px;margin-bottom:4px">Who's taking the Challenge?</h2>
+      <p style="color:#a0aec0;font-size:12px;margin-bottom:14px">Enter your name and start!</p>
+      <div class="settings">
+        <label>Challenger Name</label>
+        <input type="text" id="playerName" value="Omar" placeholder="Enter your name" style="width:100%;padding:10px;border:1px solid #4a5568;border-radius:8px;font-size:14px;background:#1a202c;color:#fff;margin-bottom:12px;">
+        <label>Operation</label>
+        <div class="op-tabs">
+          <div class="op-tab active-mult" id="tabMult" onclick="setOp('mult')">&#10006; Multiply</div>
+          <div class="op-tab" id="tabDiv" onclick="setOp('div')">&#10135; Divide</div>
+          <div class="op-tab" id="tabMix" onclick="setOp('mix')">&#127922; Both</div>
+        </div>
+        <label>Questions</label>
+        <select id="numQ"><option value="10">10</option><option value="15">15</option><option value="20" selected>20</option><option value="30">30</option></select>
+        <label>Time per Question</label>
+        <div class="row"><input type="range" id="tLimit" min="5" max="25" value="10" oninput="document.getElementById('tVal').textContent=this.value+'s'"><span class="range-val" id="tVal">10s</span></div>
+        <label>Answer Mode</label>
+        <select id="qMode"><option value="type">Type Answer</option><option value="choice">Multiple Choice</option><option value="mixed">Mixed</option></select>
+      </div>
+      <button class="btn btn-pri" onclick="startQuiz()" style="width:100%;margin-top:12px">&#128640; Start Challenge</button>
+    </div>
+    <div id="qScreen" class="hidden">
+      <div class="timer-container"><svg class="timer-ring" width="70" height="70" viewBox="0 0 70 70"><circle class="timer-bg" cx="35" cy="35" r="30"/><circle class="timer-fg" id="tRing" cx="35" cy="35" r="30" stroke-dasharray="188.5" stroke-dashoffset="0"/></svg><div class="timer-num" id="tNum">10</div></div>
+      <div class="q-badge" id="qBadge"></div>
+      <div class="op-badge" id="opBadge"></div>
+      <div class="diff-badge" id="dBadge"></div>
+      <div class="question" id="qText"></div>
+      <div id="aArea"></div>
+      <div class="feedback" id="fb"></div>
+    </div>
+    <div id="rScreen" class="hidden"></div>
+  </div>
+</div>
+<script>
+var circ=2*Math.PI*30, qs=[], cur=0, sc=0, ans=[], xp=0, stk=0, mStk=0, tot=20, tpq=10, md='type', opType='mult', tInt=null, qStart=0, tLeft=0, weakT={}, playerName='Omar';
+
+function setOp(op){
+  opType=op;
+  document.getElementById('tabMult').className='op-tab'+(op==='mult'?' active-mult':'');
+  document.getElementById('tabDiv').className='op-tab'+(op==='div'?' active-div':'');
+  document.getElementById('tabMix').className='op-tab'+(op==='mix'?' active-mix':'');
+}
+
+function diffM(a,b){if(a<=5&&b<=5)return'easy';if((a>=7&&b>=7)||a*b>80)return'hard';return'med';}
+function diffD(divisor,quotient){if(divisor<=3&&quotient<=5)return'easy';if(divisor>=7||quotient>=9)return'hard';return'med';}
+
+function genMultQ(){var a=Math.floor(Math.random()*11)+2,b=Math.floor(Math.random()*12)+1;return{text:a+' \u00d7 '+b+' = ?',ans:a*b,d:diffM(a,b),op:'mult',label:a+'x'+b};}
+function genDivQ(){var divisor=Math.floor(Math.random()*11)+2,quotient=Math.floor(Math.random()*12)+1,dividend=divisor*quotient;return{text:dividend+' \u00f7 '+divisor+' = ?',ans:quotient,d:diffD(divisor,quotient),op:'div',label:dividend+'\u00f7'+divisor};}
+
+function genQ(n){
+  var r=[];
+  for(var i=0;i<n;i++){
+    if(opType==='mult') r.push(genMultQ());
+    else if(opType==='div') r.push(genDivQ());
+    else r.push(Math.random()>0.5?genMultQ():genDivQ());
+  }
+  return r;
+}
+
+function genChoices(c){var s=new Set([c]);while(s.size<4){var o=Math.floor(Math.random()*16)-8;if(o===0)o=1;var w=c+o;if(w<1)w=c+Math.abs(o);s.add(w);}return Array.from(s).sort(function(){return Math.random()-0.5;});}
+
+function startQuiz(){
+  tot=parseInt(document.getElementById('numQ').value);
+  tpq=parseInt(document.getElementById('tLimit').value);
+  md=document.getElementById('qMode').value;
+  playerName=document.getElementById('playerName').value.trim()||'Player';
+  document.getElementById('mainTitle').innerHTML='&#9889; '+playerName+"'s Math Challenge";
+  qs=genQ(tot);cur=0;sc=0;ans=[];xp=0;stk=0;mStk=0;weakT={};
+  document.getElementById('startScreen').className='hidden';
+  document.getElementById('qScreen').className='';
+  document.getElementById('qScreen').style.display='flex';
+  document.getElementById('qScreen').style.flexDirection='column';
+  document.getElementById('qScreen').style.alignItems='center';
+  document.getElementById('progSec').className='';
+  document.getElementById('streakBar').className='streak-bar';
+  document.getElementById('xpBar').className='xp-bar';
+  showQ();
+}
+
+function showQ(){
+  var q=qs[cur];
+  document.getElementById('qBadge').textContent='Question '+(cur+1)+' / '+tot;
+  document.getElementById('qText').textContent=q.text;
+  document.getElementById('fb').textContent='';document.getElementById('fb').className='feedback';
+  document.getElementById('card').className='quiz-card';
+  var ob=document.getElementById('opBadge');
+  if(q.op==='mult'){ob.textContent='MULTIPLICATION';ob.className='op-badge op-mult';}
+  else{ob.textContent='DIVISION';ob.className='op-badge op-div';}
+  var db=document.getElementById('dBadge');db.textContent=q.d.toUpperCase();db.className='diff-badge d-'+q.d;
+  document.getElementById('progFill').style.width=((cur/tot)*100)+'%';
+  document.getElementById('progTxt').textContent=sc+' correct | Streak: '+stk;
+  document.getElementById('streakTxt').textContent='Streak: '+stk;
+  var qm=md;if(md==='mixed')qm=Math.random()>0.5?'type':'choice';
+  var area=document.getElementById('aArea');
+  if(qm==='choice'){var ch=genChoices(q.ans);area.innerHTML='<div class="choices">'+ch.map(function(c){return'<button class="ch-btn" onclick="pickC(this,'+c+')">'+c+'</button>';}).join('')+'</div>';}
+  else{area.innerHTML='<input type="number" inputmode="numeric" class="ans-input" id="aInp" autocomplete="off"><br><button class="sub-btn" onclick="subT()">Submit</button>';setTimeout(function(){var i=document.getElementById('aInp');if(i){i.focus();i.onkeydown=function(e){if(e.key==="Enter")subT();};}},100);}
+  tLeft=tpq;qStart=Date.now();updTimer();clearInterval(tInt);tInt=setInterval(tick,100);
+}
+
+function tick(){var el=(Date.now()-qStart)/1000;tLeft=Math.max(0,tpq-el);updTimer();if(tLeft<=0){clearInterval(tInt);timeUp();}}
+function updTimer(){var p=tLeft/tpq,off=circ*(1-p),r=document.getElementById('tRing');r.style.strokeDasharray=circ;r.style.strokeDashoffset=off;r.classList.remove('warn','danger');if(p<0.25)r.classList.add('danger');else if(p<0.5)r.classList.add('warn');document.getElementById('tNum').textContent=Math.ceil(tLeft);}
+
+function timeUp(){var q=qs[cur];ans.push({q:q,ua:null,ok:false,to:true,rt:tpq});stk=0;trkW(q);document.getElementById('fb').textContent='\u23f0 Time up! = '+q.ans;document.getElementById('fb').className='feedback wrg';document.getElementById('card').classList.add('flash-wrong');disIn();setTimeout(adv,1400);}
+
+function pickC(btn,v){clearInterval(tInt);var rt=tpq-tLeft,q=qs[cur],ok=v===q.ans;var all=document.querySelectorAll('.ch-btn');all.forEach(function(b){b.disabled=true;b.style.pointerEvents='none';});if(ok){btn.classList.add('cor');hCor(rt);}else{btn.classList.add('wrg');all.forEach(function(b){if(parseInt(b.textContent)===q.ans)b.classList.add('rev');});hWrg(q,v);}ans.push({q:q,ua:v,ok:ok,to:false,rt:rt});setTimeout(adv,1400);}
+
+function subT(){var inp=document.getElementById('aInp');if(!inp)return;var v=parseInt(inp.value);if(isNaN(v))return;clearInterval(tInt);var rt=tpq-tLeft,q=qs[cur],ok=v===q.ans;inp.disabled=true;if(ok){inp.classList.add('cor');hCor(rt);}else{inp.classList.add('wrg');hWrg(q,v);}ans.push({q:q,ua:v,ok:ok,to:false,rt:rt});setTimeout(adv,1400);}
+
+function hCor(rt){sc++;stk++;if(stk>mStk)mStk=stk;var pts=Math.max(5,Math.round(15-rt));if(stk>=3)pts+=stk*2;xp+=pts;document.getElementById('fb').textContent='\u2713 Correct! +'+pts;document.getElementById('fb').className='feedback cor';document.getElementById('card').classList.add('flash-correct');sPop('+'+pts);updXP();}
+function hWrg(q,v){stk=0;trkW(q);document.getElementById('fb').textContent='\u2717 Answer: '+q.ans;document.getElementById('fb').className='feedback wrg';document.getElementById('card').classList.add('flash-wrong');}
+function trkW(q){var key=(q.op==='mult'?'\u00d7':'\u00f7')+' '+q.label;weakT[key]=(weakT[key]||0)+1;}
+function sPop(t){var p=document.createElement('div');p.className='pop';p.textContent=t;document.getElementById('card').appendChild(p);setTimeout(function(){if(p.parentNode)p.parentNode.removeChild(p);},900);}
+function updXP(){var mx=tot*20,pct=Math.min(100,(xp/mx)*100);document.getElementById('xpFill').style.width=pct+'%';document.getElementById('xpPts').textContent=xp+' pts';}
+function disIn(){var i=document.getElementById('aInp');if(i)i.disabled=true;document.querySelectorAll('.ch-btn').forEach(function(b){b.disabled=true;b.style.pointerEvents='none';});}
+function adv(){cur++;if(cur>=tot)showRes();else showQ();}
+
+function showRes(){
+  clearInterval(tInt);
+  document.getElementById('qScreen').className='hidden';
+  document.getElementById('progFill').style.width='100%';document.getElementById('progTxt').textContent='Complete!';
+  document.getElementById('streakBar').className='streak-bar hidden';
+  var pct=Math.round((sc/tot)*100),avg=(ans.reduce(function(s,a){return s+a.rt;},0)/ans.length).toFixed(1),toC=ans.filter(function(a){return a.to;}).length;
+  var multCorr=ans.filter(function(a){return a.q.op==='mult'&&a.ok;}).length,multTot=ans.filter(function(a){return a.q.op==='mult';}).length;
+  var divCorr=ans.filter(function(a){return a.q.op==='div'&&a.ok;}).length,divTot=ans.filter(function(a){return a.q.op==='div';}).length;
+  var em='&#127942;',msg='Outstanding!';
+  if(pct>=90){em='&#127942;';msg='Outstanding, '+playerName+'!';}else if(pct>=70){em='&#128079;';msg='Great job, '+playerName+'!';}else if(pct>=50){em='&#128170;';msg='Keep going, '+playerName+'!';}else{em='&#128218;';msg='Practice makes perfect!';}
+  var ws=Object.entries(weakT).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
+  var wrong=ans.filter(function(a){return!a.ok;});
+  var wHtml='';
+  if(ws.length>0){wHtml='<div style="text-align:left;margin-top:12px"><div style="font-size:12px;color:#a0aec0;margin-bottom:6px">&#9888; Weak Areas</div><div class="weak-tags">';ws.forEach(function(w){wHtml+='<span class="weak-tag">'+w[0]+' ('+w[1]+')</span>';});wHtml+='</div></div>';}
+  var breakdownHtml='';
+  if(multTot>0&&divTot>0){breakdownHtml='<div class="stats-grid" style="margin-top:4px"><div class="stat-box"><div class="v" style="color:#90cdf4">'+multCorr+'/'+multTot+'</div><div class="l">Multiply</div></div><div class="stat-box"><div class="v" style="color:#feb2b2">'+divCorr+'/'+divTot+'</div><div class="l">Divide</div></div><div class="stat-box"><div class="v" style="color:#fbd38d">'+xp+'</div><div class="l">XP</div></div></div>';}
+  var rHtml='';
+  if(wrong.length>0){rHtml='<div style="text-align:left;margin-top:12px"><div style="font-size:12px;color:#a0aec0;margin-bottom:6px">&#128269; Review</div>';wrong.slice(0,8).forEach(function(a){var ua=a.to?'&#9203;':'<span class="ua">'+a.ua+'</span>';var sym=a.q.op==='mult'?'&#10006;':'&#10135;';rHtml+='<div class="review-item"><span style="color:#fc8181;margin-right:6px">\u2717</span><span style="flex:1">'+a.q.label+'</span>'+ua+'<span class="ca">'+a.q.ans+'</span></div>';});rHtml+='</div>';}
+  var rd=document.getElementById('rScreen');rd.className='';
+  rd.innerHTML='<div style="text-align:center;width:100%"><div style="font-size:42px">'+em+'</div><h2 style="color:#fff;font-size:18px;margin:4px 0">'+msg+'</h2><div style="font-size:38px;font-weight:700;font-family:monospace;color:#667eea;margin:6px 0">'+sc+'/'+tot+'</div><div class="stats-grid"><div class="stat-box"><div class="v">'+pct+'%</div><div class="l">Accuracy</div></div><div class="stat-box"><div class="v">'+avg+'s</div><div class="l">Avg Time</div></div><div class="stat-box"><div class="v">'+mStk+'</div><div class="l">Best Streak</div></div></div>'+breakdownHtml+wHtml+rHtml+'<div class="btn-group"><button class="btn btn-suc" onclick="pracW()">&#127919; Practice Weak</button><button class="btn btn-pri" onclick="restart()">&#8635; New Quiz</button></div></div>';
+}
+
+function pracW(){
+  var wn=Object.entries(weakT).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
+  if(wn.length===0){restart();return;}
+  tot=15;qs=[];
+  for(var i=0;i<tot;i++){
+    var pick=wn[Math.floor(Math.random()*wn.length)][0];
+    if(pick.indexOf('\u00d7')>=0)qs.push(genMultQ());
+    else qs.push(genDivQ());
+  }
+  cur=0;sc=0;ans=[];xp=0;stk=0;mStk=0;weakT={};
+  document.getElementById('rScreen').className='hidden';document.getElementById('rScreen').innerHTML='';
+  document.getElementById('qScreen').className='';document.getElementById('qScreen').style.display='flex';document.getElementById('qScreen').style.flexDirection='column';document.getElementById('qScreen').style.alignItems='center';
+  document.getElementById('streakBar').className='streak-bar';document.getElementById('xpBar').className='xp-bar';
+  document.getElementById('xpFill').style.width='0%';document.getElementById('xpPts').textContent='0';showQ();
+}
+function restart(){
+  document.getElementById('rScreen').className='hidden';document.getElementById('rScreen').innerHTML='';
+  document.getElementById('qScreen').className='hidden';document.getElementById('progSec').className='hidden';
+  document.getElementById('streakBar').className='streak-bar hidden';document.getElementById('xpBar').className='xp-bar hidden';
+  document.getElementById('startScreen').className='';document.getElementById('xpFill').style.width='0%';document.getElementById('xpPts').textContent='0';
+}
+</script>
+</body>
+</html>
