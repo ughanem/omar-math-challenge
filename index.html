@@ -301,8 +301,10 @@ function startTraining(){
   playerName=document.getElementById('playerName').value.trim()||'Player';
   document.getElementById('mainTitle').innerHTML='&#128218; '+playerName+"'s Training";
   trainQs=[];trainCur=0;trainAns=[];trainSc=0;
-  // Generate all 12 questions for the selected table, in order 1-12
-  for(var i=1;i<=12;i++){
+  // Generate all 12 questions for the selected table in random order
+  var nums=[1,2,3,4,5,6,7,8,9,10,11,12];
+  for(var j=nums.length-1;j>0;j--){var k=Math.floor(Math.random()*(j+1));var tmp=nums[j];nums[j]=nums[k];nums[k]=tmp;}
+  for(var idx=0;idx<nums.length;idx++){var i=nums[idx];
     if(trainOp==='mult'){
       trainQs.push({a:trainTable,b:i,text:trainTable+' \u00d7 '+i+' = ?',ans:trainTable*i,op:'mult'});
     }else{
