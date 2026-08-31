@@ -165,6 +165,11 @@
           </div>
           <label>Select Table to Practice</label>
           <div class="table-grid" id="tableGrid"></div>
+          <label>Question Order</label>
+          <div class="op-tabs">
+            <div class="op-tab active-mix" id="tTabRandom" onclick="setTrainOrder('random')">&#127922; Random</div>
+            <div class="op-tab" id="tTabSeq" onclick="setTrainOrder('sequential')">&#128290; In Order</div>
+          </div>
           <button class="btn btn-suc" onclick="startTraining()" style="width:100%;margin-top:8px">&#128218; Start Training</button>
         </div>
       </div>
@@ -276,13 +281,19 @@ function showRes(){
 function pracW(){var wn=Object.entries(weakT).sort(function(a,b){return b[1]-a[1];}).slice(0,5);if(wn.length===0){restart();return;}tot=15;qs=[];for(var i=0;i<tot;i++){var pick=wn[Math.floor(Math.random()*wn.length)][0];if(pick.indexOf('\u00d7')>=0)qs.push(genMultQ());else qs.push(genDivQ());}cur=0;sc=0;ans=[];xp=0;stk=0;mStk=0;weakT={};document.getElementById('rScreen').className='hidden';document.getElementById('rScreen').innerHTML='';var el=document.getElementById('qScreen');el.className='';el.style.display='flex';el.style.flexDirection='column';el.style.alignItems='center';document.getElementById('streakBar').className='streak-bar';document.getElementById('xpBar').className='xp-bar';document.getElementById('xpFill').style.width='0%';document.getElementById('xpPts').textContent='0';showQ();}
 
 // ========== TRAINING MODE ==========
-var trainOp='mult',trainTable=2,trainQs=[],trainCur=0,trainAns=[],trainSc=0;
+var trainOp='mult',trainOrder='random',trainTable=2,trainQs=[],trainCur=0,trainAns=[],trainSc=0;
 
 function setTrainOp(op){
   trainOp=op;
   document.getElementById('tTabMult').className='op-tab'+(op==='mult'?' active-mult':'');
   document.getElementById('tTabDiv').className='op-tab'+(op==='div'?' active-div':'');
   buildTableGrid();
+}
+
+function setTrainOrder(ord){
+  trainOrder=ord;
+  document.getElementById('tTabRandom').className='op-tab'+(ord==='random'?' active-mix':'');
+  document.getElementById('tTabSeq').className='op-tab'+(ord==='sequential'?' active-mix':'');
 }
 
 function buildTableGrid(){
@@ -303,7 +314,7 @@ function startTraining(){
   trainQs=[];trainCur=0;trainAns=[];trainSc=0;
   // Generate all 12 questions for the selected table in random order
   var nums=[1,2,3,4,5,6,7,8,9,10,11,12];
-  for(var j=nums.length-1;j>0;j--){var k=Math.floor(Math.random()*(j+1));var tmp=nums[j];nums[j]=nums[k];nums[k]=tmp;}
+  if(trainOrder==='random'){for(var j=nums.length-1;j>0;j--){var k=Math.floor(Math.random()*(j+1));var tmp=nums[j];nums[j]=nums[k];nums[k]=tmp;}}
   for(var idx=0;idx<nums.length;idx++){var i=nums[idx];
     if(trainOp==='mult'){
       trainQs.push({a:trainTable,b:i,text:trainTable+' \u00d7 '+i+' = ?',ans:trainTable*i,op:'mult'});
