@@ -129,8 +129,19 @@ body{background:#1a1a2e;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',
 .badge-card.locked .b-icon{opacity:.3}
 /* Ref table modal */
 .ref-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:2px;font-size:11px;font-family:monospace;margin:8px 0}
-.ref-cell{background:#1a202c;padding:4px 2px;text-align:center;border-radius:4px;color:#a0aec0}
-.ref-cell.hdr{background:#4a5568;color:#fff;font-weight:600}
+.ref-cell{background:#1a202c;padding:5px 3px;text-align:center;border-radius:4px;color:#fff;font-weight:500;transition:transform .1s}
+.ref-cell:hover{transform:scale(1.15);z-index:1}
+.ref-cell.hdr{background:#4a5568;color:#fff;font-weight:700}
+.ref-cell.c1{background:#22543d;color:#68d391}
+.ref-cell.c2{background:#1a4731;color:#9ae6b4}
+.ref-cell.c3{background:#2b3a67;color:#90cdf4}
+.ref-cell.c4{background:#2c3e6b;color:#63b3ed}
+.ref-cell.c5{background:#553c9a;color:#d6bcfa}
+.ref-cell.c6{background:#744210;color:#fbd38d}
+.ref-cell.c7{background:#7b341e;color:#fdb99b}
+.ref-cell.c8{background:#742a2a;color:#fc8181}
+.ref-cell.c9{background:#5b2c3c;color:#feb2b2}
+.ref-cell.c10{background:#4a1d6e;color:#e9d8fd}
 /* Utility */
 .util-btns{display:flex;gap:6px;margin-bottom:12px}
 .util-btn{padding:6px 12px;border-radius:8px;border:1px solid #4a5568;background:#1a202c;color:#a0aec0;font-size:11px;cursor:pointer;display:flex;align-items:center;gap:4px}
@@ -354,8 +365,15 @@ function showRefTable(){
   document.getElementById('refModal').classList.remove('hidden');
   renderRef();
 }
+function getColorClass(val,maxVal){
+  var pct=val/maxVal;
+  if(pct<=0.1)return'c1';if(pct<=0.2)return'c2';if(pct<=0.3)return'c3';
+  if(pct<=0.4)return'c4';if(pct<=0.5)return'c5';if(pct<=0.6)return'c6';
+  if(pct<=0.7)return'c7';if(pct<=0.8)return'c8';if(pct<=0.9)return'c9';return'c10';
+}
 function renderRef(){
   var op=document.getElementById('refSel').value;
+  var maxVal=op==='mult'?144:op==='add'?24:12;
   var h='<div class="ref-grid" style="grid-template-columns:repeat(13,1fr)">';
   h+='<div class="ref-cell hdr">'+(op==='mult'?'&#215;':op==='div'?'&#247;':op==='add'?'+':'-')+'</div>';
   for(var j=1;j<=12;j++)h+='<div class="ref-cell hdr">'+j+'</div>';
@@ -363,9 +381,9 @@ function renderRef(){
     h+='<div class="ref-cell hdr">'+i+'</div>';
     for(var j=1;j<=12;j++){
       var v=0;
-      if(op==='mult')v=i*j;else if(op==='div')v=(i*j)+' &#247; '+i+' = '+j;else if(op==='add')v=i+j;else v=Math.abs(i*2-j);
-      if(op==='div')h+='<div class="ref-cell" style="font-size:8px">'+j+'</div>';
-      else h+='<div class="ref-cell">'+v+'</div>';
+      if(op==='mult')v=i*j;else if(op==='div')v=j;else if(op==='add')v=i+j;else v=Math.abs(i*2-j);
+      var cc=getColorClass(v,maxVal);
+      h+='<div class="ref-cell '+cc+'">'+v+'</div>';
     }
   }
   h+='</div>';
